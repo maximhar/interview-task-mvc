@@ -1,0 +1,175 @@
+﻿<style>
+    th{
+        text-align: left;
+    }
+    #edit-bar, #search-bar, #new-bar {
+        margin:4px; padding:6px; border: solid gray 1px; display:block;
+    }
+    #success-new, #error-new {
+        margin:4px;
+        font-weight: bold;
+        font-size: 10pt;
+    }
+    #success-new {
+        color: darkgreen;
+    }
+    #error-new {
+        color: darkred;
+    }
+</style>
+<h1 style="margin:4px; padding:6px; background-color:darkgray; color: white">Real Estate Market Web Application</h1>
+<div id="search-bar"></div>
+<div id="new-bar"></div>
+<div id="edit-bar" style="position:fixed; background: white; left: 0px; top: 0px;"></div>
+<div id="results"style="margin: 4px;">
+    <table id="results-table" style="padding:6px; width:100%; border: 1px solid gray">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>City</th>
+                <th>Country</th>
+                <th>Address</th>
+                <th>Price</th>
+                <th>Owner</th>
+                <th>Type</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+<script type="text/javascript">
+    var newBarContent = '<button type="button" id="open-new-button">New...</button>';
+    var searchBarContent = '<button type="button" id="open-search-button">Search...</button>';
+    $('#search-bar').html(searchBarContent);
+    $('#new-bar').html(newBarContent);
+    $('#edit-bar').hide();
+    doSearch();
+    attachEventsToSearchOpen();
+    attachEventsToNewOpen();
+    function attachEventsToSearchOpen() {
+        $('#open-search-button').click(loadSearchBar);
+    }
+    function attachEventsToNewOpen() {
+        $('#open-new-button').click(loadNewBar);
+    }
+    function loadSearchBar() {
+        $.get('/home/searchbar', function (result) {
+            $('#search-bar').html(result);
+            attachEventsToSearch();
+        });
+    }
+    function loadNewBar() {
+        $.get('/home/newbar', function (result) {
+            $('#new-bar').html(result);
+            attachEventsToNew();
+        });
+    }
+    function attachEventsToSearch() {
+        $('#search-button').click(doSearch);
+        $('#hide-search-button').click(hideSearchBar);
+    }
+    function attachEventsToNew() {
+        $('#new-button').click(doNew);
+        $('#hide-new-button').click(hideNewBar);
+    }
+    function attachEventsToEdit() {
+        $('#edit-button').click(doEdit);
+        $('#hide-edit-button').click(hideEditBar);
+    }
+    function hideSearchBar() {
+        $('#search-bar').html(searchBarContent);
+        attachEventsToSearchOpen();
+    }
+    function hideNewBar() {
+        $('#new-bar').html(newBarContent);
+        attachEventsToNewOpen();
+    }
+    function hideEditBar() {
+        $('#edit-bar').fadeOut(250);
+    }
+    function doEdit() {
+        var row = $('#edit-bar').data('row');
+        $.ajax({
+            url: '/api/search/' + $('#edit-bar').data('id'),
+            type: 'PUT',
+            data: $('#edit-form').serialize(),
+            success: function (item) {
+                row.replaceWith(createRow(item.Id, item.City, item.Country, item.Address, item.Price, item.Owner, item.Type));
+                attachEventsToEditDelete();
+                $('#edit-bar').fadeOut(250);
+            }
+        });
+    }
+    function doNew() {
+        $.ajax({
+            url: '/api/search',
+            type: 'POST',
+            data: $('#new-form').serialize(),
+            success: function (item) {
+                $('#results-table').append(createRow(item.Id, item.City, item.Country, item.Address, item.Price, item.Owner, item.Type));
+                attachEventsToEditDelete();
+                $('#new-bar').append('<span id="success-new">Item added.</span>')
+                $('#success-new').delay(1000).fadeOut(250, function () {
+                    $('#success-new').remove();
+                });
+            },
+            error: function () {
+                $('#new-bar').append('<span id="error-new">Error occured.</span>')
+                $('#error-new').delay(1000).fadeOut(250, function () {
+                    $('#error-new').remove();
+                });
+            }
+        });
+    }
+    function doSearch() {
+        $('#results-table > tbody').html("<tr><td>Loading items...</td></tr>");
+        var req = $.getJSON('api/search', $('#search-form').serialize(), function (payload) {
+            $('#results-table > tbody').html("");
+            $(payload).each(function (i, item) {
+                $('#results-table').append(createRow(item.Id, item.City, item.Country, item.Address, item.Price, item.Owner, item.Type));
+            });
+            attachEventsToEditDelete();
+        });
+    }
+    function attachEventsToEditDelete() {
+        $('.delete-link').click(function () {
+            onDelete($(this));
+        });
+        $('.edit-link').click(function () {
+            onEdit($(this));
+        });
+    }
+    function onDelete(button) {
+        $.ajax(
+            {
+                url: '/api/search/' + $(this).data('id'),
+                type: 'DELETE',
+                success: function () {
+                    button.closest('tr').hide();
+                }
+            });
+    }
+    function onEdit(button) {
+        $.get('/home/editbar/' + button.data('id'), function (content) {
+            $('#edit-bar').html(content);
+            $('#edit-bar').show();
+            $('#edit-bar').data('id', button.data('id'));
+            $('#edit-bar').data('row', button.closest('tr'));
+            attachEventsToEdit();
+        });
+    }
+    function createRow(id, city, country, address, price, owner, type){
+        return '<tr data-id=' + id + '><td id="itemid">' + id + '</td>' +
+                    '<td>' + city + '</td>' +
+                    '<td>' + country + '</td>' +
+                    '<td>' + address + '</td>' +
+                    '<td> BGN ' + price + '</td>' +
+                    '<td>' + owner + '</td>' +
+                    '<td>' + ((type == 1) ? 'Apartment' : 'House') +
+                    '<td><button class="delete-link" data-id="' + id + '">Delete</button>' +
+                    '<button class="edit-link" data-id="' + id + '">Edit</button></td></tr>';
+    }
+</script>
+
+

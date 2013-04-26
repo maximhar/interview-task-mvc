@@ -1,0 +1,21 @@
+﻿<form id="new-form">
+    <table>
+        <tr><td style="width:300px">City:</td><td>@Html.TextBox("city")</td></tr>
+        <tr><td>Country:</td><td>@Html.TextBox("country")</td></tr>
+        <tr><td>Price:</td><td>@Html.TextBox("price")</td></tr>
+        <tr><td>Area:</td><td>@Html.TextBox("area")</td></tr>
+        <tr><td>Owner:</td><td>@Html.TextBox("owner")</td></tr>
+        <tr><td>Address:</td><td>@Html.TextArea("address")</td></tr>
+        <tr>
+            <td>Type:</td>
+            <td>
+                @Html.RadioButton("type", "apartment") Apartment <br />
+                @Html.RadioButton("type", "house") House <br />
+            </td>
+        </tr>
+        <tr><td>
+            <button type="button" id="new-button">Add new</button>
+            <button type="button" id="hide-new-button">Hide</button>
+        </td></tr>
+    </table>
+</form>

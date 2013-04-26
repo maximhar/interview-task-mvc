@@ -1,0 +1,17 @@
+﻿<form id="search-form">
+    <table>
+        <tr><td style="color:gray; font-style:oblique; font-size:10pt">Notice: Leave any irrelevant fields blank.</td></tr>
+        <tr><td style="width:300px">City:</td><td>@Html.TextBox("city")</td></tr>
+        <tr><td>Country:</td><td>@Html.TextBox("country")</td></tr>
+        <tr><td>Maximum price:</td><td>@Html.TextBox("maxprice")</td></tr>
+        <tr>
+            <td>Type:</td>
+            <td>
+                @Html.RadioButton("type", "apartment") Apartment <br />
+                @Html.RadioButton("type", "house") House <br />
+                @Html.RadioButton("type", "", true) No preference
+            </td>
+        </tr>
+        <tr><td><button type="button" id="search-button">Search now</button> <button type="button" id="hide-search-button">Hide</button></td></tr>
+    </table>
+</form>
